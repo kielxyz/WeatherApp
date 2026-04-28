@@ -1,0 +1,218 @@
+<Window x:Class="WeatherApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WeatherApp"
+        Title="Prognoza Pogody" Height="650" Width="900"
+        Background="#1A1A2E" WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <!-- Button Style -->
+        <Style x:Key="SearchButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E94560"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#C73652"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#A52D44"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="#16213E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#0F3460"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#E94560"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Day Card Style -->
+        <Style x:Key="DayCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#16213E"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,16"/>
+            <Setter Property="Margin" Value="4,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,25">
+            <TextBlock Text="🌤 Prognoza Pogody"
+                       FontSize="28" FontWeight="Bold"
+                       Foreground="White" HorizontalAlignment="Center"/>
+            <TextBlock Text="7-dniowa prognoza dla dowolnej miejscowości"
+                       FontSize="13" Foreground="#8899AA"
+                       HorizontalAlignment="Center" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Search Bar -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="CityTextBox"
+                     Grid.Column="0"
+                     Style="{StaticResource SearchBoxStyle}"
+                     Text="Warszawa"
+                     Margin="0,0,10,0"
+                     KeyDown="CityTextBox_KeyDown"/>
+            <Button Grid.Column="1"
+                    Content="Szukaj"
+                    Style="{StaticResource SearchButtonStyle}"
+                    Click="SearchButton_Click"
+                    MinWidth="100"/>
+        </Grid>
+
+        <!-- Current Weather Panel -->
+        <Border Grid.Row="2"
+                Background="#0F3460"
+                CornerRadius="14"
+                Padding="24,20"
+                Margin="0,0,0,20"
+                x:Name="CurrentWeatherPanel"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock x:Name="CityNameText"
+                               FontSize="22" FontWeight="Bold"
+                               Foreground="White" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="CurrentDateText"
+                               FontSize="13" Foreground="#8899AA" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="CurrentDescText"
+                               FontSize="16" Foreground="#CCDDEE"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Text="💧 " FontSize="13" Foreground="#8899AA"/>
+                        <TextBlock x:Name="CurrentHumidityText" FontSize="13" Foreground="#8899AA" Margin="0,0,16,0"/>
+                        <TextBlock Text="💨 " FontSize="13" Foreground="#8899AA"/>
+                        <TextBlock x:Name="CurrentWindText" FontSize="13" Foreground="#8899AA"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock x:Name="CurrentTempText"
+                               FontSize="52" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="CurrentIconText"
+                               FontSize="36" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 7-Day Forecast -->
+        <Grid Grid.Row="3" x:Name="ForecastGrid" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0"
+                       Text="Prognoza na 7 dni"
+                       FontSize="15" FontWeight="SemiBold"
+                       Foreground="#8899AA" Margin="0,0,0,12"/>
+
+            <ItemsControl Grid.Row="1" x:Name="ForecastItemsControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:DayForecast}">
+                        <Border Style="{StaticResource DayCardStyle}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DayName}"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="#8899AA" HorizontalAlignment="Center"
+                                           Margin="0,0,0,6"/>
+                                <TextBlock Text="{Binding Icon}"
+                                           FontSize="28" HorizontalAlignment="Center"
+                                           Margin="0,0,0,8"/>
+                                <TextBlock Text="{Binding TempMax, StringFormat='{}{0}°'}"
+                                           FontSize="18" FontWeight="Bold"
+                                           Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding TempMin, StringFormat='{}{0}°'}"
+                                           FontSize="13"
+                                           Foreground="#6677AA" HorizontalAlignment="Center"
+                                           Margin="0,2,0,8"/>
+                                <TextBlock Text="{Binding Description}"
+                                           FontSize="10" Foreground="#8899AA"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap" TextAlignment="Center"
+                                           MaxWidth="80"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                                    <TextBlock Text="💧" FontSize="10"/>
+                                    <TextBlock Text="{Binding Humidity, StringFormat='{}{0}%'}"
+                                               FontSize="10" Foreground="#6677AA" Margin="2,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!-- Loading / Error Overlay -->
+        <Grid Grid.Row="2" Grid.RowSpan="2"
+              x:Name="StatusPanel" Visibility="Collapsed"
+              VerticalAlignment="Center">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="StatusText"
+                           FontSize="16" Foreground="#8899AA"
+                           HorizontalAlignment="Center" TextAlignment="Center"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
