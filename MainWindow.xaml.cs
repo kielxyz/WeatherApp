@@ -20,13 +20,13 @@ namespace WeatherApp
         public MainWindow()
         {
             InitializeComponent();
-            // Załaduj pogodę dla domyślnego miasta po uruchomieniu
-            Loaded += async (_, _) => await LoadWeatherAsync("Biesko-Biała");
+            // Domyślne miasto
+            Loaded += async (_, _) => await LoadWeatherAsync("Warszawa");
         }
 
-        //  Obsługa zdarzeń UI
+        //  Obsługa UI
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
-            => await LoadWeatherAsync(CityTextBox.Text.Trim()); // Obsługa kliknięcia przycisku "Szukaj"
+            => await LoadWeatherAsync(CityTextBox.Text.Trim()); // Obsługa przycisku "Szukaj"
 
         private async void CityTextBox_KeyDown(object sender, KeyEventArgs e) // Obsługa naciśnięcia klawisza Enter w wyszukiwarce
         {
@@ -50,7 +50,7 @@ namespace WeatherApp
                 using var currentDoc = JsonDocument.Parse(currentJson);
                 var root = currentDoc.RootElement;
 
-                // Obsługa błędów zwróconych przez API
+                // Obsługa błędów z API
                 if (root.TryGetProperty("cod", out var codEl) && codEl.ToString() != "200")
                 {
                     var msg = root.TryGetProperty("message", out var msgEl) ? msgEl.GetString() : "Nieznany błąd";
@@ -58,6 +58,7 @@ namespace WeatherApp
                     return;
                 }
 
+                // Parsowanie danych
                 var weather      = root.GetProperty("weather")[0];
                 var main         = root.GetProperty("main");
                 var wind         = root.GetProperty("wind");
@@ -108,7 +109,7 @@ namespace WeatherApp
         {
             var list = root.GetProperty("list");
 
-            // Grupuj wpisy po dacie
+            // Grupowanie danych po dniach
             var grouped = new Dictionary<DateTime, List<JsonElement>>();
             foreach (var item in list.EnumerateArray())
             {
@@ -125,12 +126,14 @@ namespace WeatherApp
                 var temps = items.Select(i => i.GetProperty("main").GetProperty("temp").GetDouble()).ToList();
                 var humidities = items.Select(i => i.GetProperty("main").GetProperty("humidity").GetInt32()).ToList();
 
-                // Bierz pogodę z wpisu środka dnia (lub pierwszego dostępnego)
+                // Bierz pogodę z wpisu środka dnia
                 var midItem = items.FirstOrDefault(i =>
                 {
                     var h = DateTimeOffset.FromUnixTimeSeconds(i.GetProperty("dt").GetInt64()).LocalDateTime.Hour;
                     return h is >= 11 and <= 14;
                 });
+
+                // Jeśli brak wpisu z południa, bierz pierwszy
                 if (midItem.ValueKind == JsonValueKind.Undefined) midItem = items[0];
 
                 var weatherArr = midItem.GetProperty("weather")[0];
@@ -155,7 +158,7 @@ namespace WeatherApp
             return result;
         }
 
-        //  Pomocnicze
+        //  funkcje pomocnicze
         private async Task<string> FetchAsync(string url)
         {
             var response = await _httpClient.GetAsync(url);
